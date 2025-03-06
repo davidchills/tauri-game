@@ -17,15 +17,20 @@ const GuessingGame = {
     numOfWins: 0,
     numOfLosses: 0,
     randomNumber: 50,
-    feedbackNumberOfGuessesText: document.getElementById("feedbackNumberOfGuesses"),
-    instructionsTextElement: document.getElementById("instructions"),
-    inputField: document.getElementById("numberInput"),
-    feedbackElement: document.getElementById("feedback"),
-    gameStatsElement: document.getElementById("gameStats"),
+    feedbackNumberOfGuessesText: null,
+    instructionsTextElement: null,
+    inputField: null,
+    feedbackElement: null,
+    gameStatsElement: null,
 
     setup: function () {
         GuessingGame.fetchFromLocal();
         GuessingGame.genRandomNumber();
+        GuessingGame.feedbackNumberOfGuessesText = document.getElementById("feedbackNumberOfGuesses");
+        GuessingGame.instructionsTextElement = document.getElementById("instructions");
+        GuessingGame.inputField = document.getElementById("numberInput");
+        GuessingGame.feedbackElement = document.getElementById("feedback");
+        GuessingGame.gameStatsElement = document.getElementById("gameStats");
         GuessingGame.setInstructions();
         GuessingGame.enableInput();
         GuessingGame.inputField.value = "";
@@ -114,7 +119,6 @@ const GuessingGame = {
 			GuessingGame.minGenNum = data.minGenNum;
 			GuessingGame.maxGenNum = data.maxGenNum;
 			GuessingGame.guessesMax = data.guessesMax;
-			//GuessingGame.guessesMade = data.guessesMade;
 			GuessingGame.numOfWins = data.numOfWins;
 			GuessingGame.numOfLosses = data.numOfLosses;
 			GuessingGame.randomNumber = data.randomNumber;
@@ -128,17 +132,17 @@ const GuessingGame = {
 		GuessingGame.genRandomNumber(); 
 		GuessingGame.guessesMade = 0;
 		GuessingGame.saveToLocal();
+		GuessingGame.setInstructions();
+		GuessingGame.enableInput();         
 		GuessingGame.feedbackNumberOfGuessesText.textContent = "";
 		GuessingGame.feedbackElement.textContent = "Make your guess!";
 		GuessingGame.inputField.value = "";
-		GuessingGame.inputField.focus();
-		GuessingGame.setInstructions();
-		GuessingGame.enableInput();  
+		GuessingGame.inputField.focus();        
         document.getElementById("sendReset").classList.remove("highlight");      
     },
 
     genRandomNumber: function () {
-        GuessingGame.randomNumber = Math.floor(Math.random() * (GuessingGame.maxGenNum - GuessingGame.minGenNum) + GuessingGame.minGenNum);
+        GuessingGame.randomNumber = Math.floor(Math.random() * (GuessingGame.maxGenNum - GuessingGame.minGenNum + 1) + GuessingGame.minGenNum);
     }
 };
 // Setup the game
