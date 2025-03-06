@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tauri Game</title>
+    <script src="./libs/pixi.min.js"></script>
+    <script defer src="game.js" defer></script>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            text-align: center;
+        }
+
+        #sendButton {
+            height: 30px;
+            width: 200px;
+            border-radius: 10px;
+            font-size: large;
+            padding: 5px, 10px;
+            margin: 5px;
+            vertical-align: middle;
+            text-align: center;
+            border-color:rgb(51, 96, 22);
+            background-color: rgb(244, 249, 243);
+        }
+        #sendButton:disabled {
+            border-color:rgb(9, 11, 11);
+            background-color: rgba(185, 177, 177, 0.41)
+        }
+        #sendReset {
+            height: 30px;
+            width: 200px;
+            border-radius: 10px;
+            font-size: large;
+            padding: 5px, 10px;
+            margin: 5px;
+            vertical-align: middle;
+            text-align: center;  
+            border-color:rgb(170, 66, 45);
+            background-color: rgb(242, 232, 230);           
+        }
+        #sendReset.highlight {
+            border-color:rgb(51, 96, 22);
+            background-color: rgba(185, 177, 177, 0.41)            
+        }
+        #controls {
+            margin-top: 40px;
+        }
+        #feedback {
+            font-size: 1.2em;
+            margin-top: 10px;
+            font-weight: bold;
+        }    
+        #numberInput {
+            margin-bottom: 10px;
+            height: 30px;
+            width: 200px;
+            font-size: x-large;
+            border-radius: 10px;
+            border-color: black;
+            border-style: inset;
+            background-color:rgb(250, 250, 245);
+            text-align: center;
+        }    
+        #numberInput:disabled {
+            background-color: rgb(101, 99, 99);
+        }
+    </style>    
+</head>
+<body>
+
+    <div id="controls">
+        <p id="instructions">Guess a number between X and X</p>
+        <input type="number" id="numberInput" placeholder="1 and 100" />
+        <br/>
+        <button type="button" id="sendButton">Guess</button>
+        <br/>
+        <button type="button" id="sendReset">New Game</button>
+        <p id="feedbackNumberOfGuesses"></p>
+    </div>
+    <p id="feedback">Make your guess!</p>
+    <p id="gameStats"></p>
+    
+</body>
+</html>
