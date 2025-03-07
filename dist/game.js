@@ -1,13 +1,5 @@
-//import * as PIXI from "./node_modules/pixi.js/dist/pixi.min.mjs";
-//const PIXI = require("pixi.js");
-//console.log("PixiJS loaded:", PIXI);
-// Create a PixiJS application
-const app = new PIXI.Application({
-    width: 800,
-    height: 600,
-    backgroundColor: 0x1099bb
-});
 
+/*
 const GuessingGame = {
     minGenNum: 0,
     maxGenNum: 100,
@@ -149,3 +141,186 @@ document.getElementById("numberInput").addEventListener("keydown", function(even
 });
 document.getElementById("sendButton").addEventListener("click", GuessingGame.handleNumberInput);
 document.getElementById("sendReset").addEventListener("click", GuessingGame.reset);
+*/
+
+class GuessingGame {
+    constructor() {
+        this.minGenNum = 0;
+        this.maxGenNum = 100;
+        this.guessesMax = 10;
+        this.guessesMade = 0;
+        this.lastGuessesMade = 0;
+        this.numOfWins = 0;
+        this.numOfLosses = 0;
+        this.randomNumber = 50;
+
+        // Cache elements
+        this.inputField = document.getElementById("numberInput");
+        this.feedbackElement = document.getElementById("feedback");
+        this.feedbackNumberOfGuessesText = document.getElementById("feedbackNumberOfGuesses");
+        this.instructionsTextElement = document.getElementById("instructions");
+        this.gameStatsElement = document.getElementById("gameStats");
+        this.sendButtonElement = document.getElementById("sendButton");
+        this.sendResetElement = document.getElementById("sendReset");
+		this.openSettingsButtonElement = document.getElementById("openSettingsButton");
+
+        // Bind event listeners correctly
+        this.sendButtonElement.addEventListener("click", () => this.handleNumberInput());
+        this.sendResetElement.addEventListener("click", () => this.reset());
+		this.openSettingsButtonElement.addEventListener("click", () => {
+			document.getElementById("settingsModal").style.display = "block";
+		});
+        this.inputField.addEventListener("keydown", (event) => {
+            if (event.key === "Enter") this.handleNumberInput();
+        });
+		// Settings related events
+		this.openSettingsButtonElement.addEventListener("click", () => {
+			document.getElementById("minNumber").value = this.minGenNum;
+			document.getElementById("maxNumber").value = this.maxGenNum;
+			document.getElementById("maxGuesses").value = this.guessesMax;
+			document.getElementById("settingsModal").style.display = "block";
+		});
+		document.getElementById("closeSettingsButton").addEventListener("click", () => {
+			document.getElementById("settingsModal").style.display = "none";
+		});
+		document.getElementById("saveSettingsButton").addEventListener("click", () => {
+			const minNum = parseInt(document.getElementById("minNumber").value, 10);
+			const maxNum = parseInt(document.getElementById("maxNumber").value, 10);
+			const maxGuesses = parseInt(document.getElementById("maxGuesses").value, 10);
+		
+			if (isNaN(minNum) || isNaN(maxNum) || isNaN(maxGuesses) || minNum >= maxNum || maxGuesses < 1) {
+				return;
+			}
+		
+			this.minGenNum = minNum;
+			this.maxGenNum = maxNum;
+			this.guessesMax = maxGuesses;
+			// Save to local storage
+			this.saveToLocal();
+			// Reset game with new settings
+			this.reset();
+			document.getElementById("settingsModal").style.display = "none";
+		});		
+        /*
+        // Alternate Syntax:
+        document.getElementById("sendButton").addEventListener("click", this.handleNumberInput.bind(this));
+        document.getElementById("sendReset").addEventListener("click", this.reset.bind(this));
+		*/
+        this.setup();
+    }
+
+    setup() {
+        this.fetchFromLocal();
+        this.genRandomNumber();
+        this.setInstructions();
+        this.enableInput();
+        //this.inputField.value = "";
+        //this.inputField.focus();
+    }
+
+    setInstructions() {
+        this.instructionsTextElement.textContent = `Guess a number between ${this.minGenNum} and ${this.maxGenNum}`;
+        this.gameStatsElement.textContent = `You have Won ${this.numOfWins} games and Lost ${this.numOfLosses} games.`;
+		this.inputField.setAttribute("min", this.minGenNum);
+		this.inputField.setAttribute("max", this.maxGenNum);
+		this.inputField.setAttribute("placeholder", `From ${this.minGenNum} to ${this.maxGenNum}`);
+    }
+
+    disableInput() {
+        this.inputField.setAttribute("disabled", true);
+        this.sendButtonElement.setAttribute("disabled", true);
+    }
+
+    enableInput() {
+        this.inputField.removeAttribute("disabled");
+        this.sendButtonElement.removeAttribute("disabled");
+        this.inputField.value = "";
+        this.inputField.focus();
+    }
+
+    handleNumberInput() {
+        let userGuess = parseInt(this.inputField.value, 10);
+
+        if (isNaN(userGuess) || userGuess < this.minGenNum || userGuess > this.maxGenNum) {
+            this.feedbackElement.textContent = `Please enter a number between ${this.minGenNum} and ${this.maxGenNum}.`;
+            this.feedbackElement.style.color = "red";
+            this.inputField.focus();
+            return;
+        }
+
+        this.guessesMade++;
+
+        if (this.guessesMade >= this.guessesMax) {
+            this.numOfLosses++;
+            this.saveToLocal();
+            this.disableInput();
+            this.feedbackElement.textContent = `I'm sorry, you lost. Max (${this.guessesMax}) guesses exceeded. The number was ${this.randomNumber}`;
+            return;
+        }
+
+        if (userGuess > this.randomNumber) {
+            this.feedbackElement.textContent = `Your guess of ${userGuess}, is Too high! Try again.`;
+            this.feedbackElement.style.color = "orange";
+        } 
+        else if (userGuess < this.randomNumber) {
+            this.feedbackElement.textContent = `Your guess of ${userGuess}, is Too low! Try again.`;
+            this.feedbackElement.style.color = "blue";
+        } 
+        else {
+            this.numOfWins++;
+            this.lastGuessesMade = this.guessesMade;
+            this.saveToLocal();
+            this.disableInput();
+            this.feedbackElement.textContent = `Correct! You guessed ${userGuess} in ${this.lastGuessesMade} tries!`;
+            this.feedbackElement.style.color = "green";
+            this.sendResetElement.classList.add("highlight");
+        }
+
+        this.feedbackNumberOfGuessesText.textContent = `You have made ${this.guessesMade} of ${this.guessesMax} guesses allowed.`;
+        this.inputField.value = "";
+        this.inputField.focus();
+    }
+
+    saveToLocal() {
+        const data = {
+            "minGenNum": this.minGenNum,
+            "maxGenNum": this.maxGenNum,
+            "guessesMax": this.guessesMax,
+            "numOfWins": this.numOfWins,
+            "numOfLosses": this.numOfLosses
+        };
+        localStorage.setItem("setting", JSON.stringify(data));
+    }
+
+    fetchFromLocal() {
+        if (!localStorage.getItem("setting")) {
+            this.genRandomNumber();
+        } 
+        else {
+            const data = JSON.parse(localStorage.getItem("setting"));
+            this.minGenNum = data.minGenNum;
+            this.maxGenNum = data.maxGenNum;
+            this.guessesMax = data.guessesMax;
+            this.numOfWins = data.numOfWins;
+            this.numOfLosses = data.numOfLosses;
+        }
+    }
+
+    reset() {
+        this.genRandomNumber();
+        this.guessesMade = 0;
+        this.saveToLocal();
+        this.setInstructions();
+        this.enableInput();
+        this.feedbackNumberOfGuessesText.textContent = "";
+        this.feedbackElement.textContent = "Make your guess!";
+        this.sendResetElement.classList.remove("highlight");
+    }
+
+    genRandomNumber() {
+        this.randomNumber = Math.floor(Math.random() * (this.maxGenNum - this.minGenNum + 1) + this.minGenNum);
+    }
+}
+
+// Initialize game
+const game = new GuessingGame();
